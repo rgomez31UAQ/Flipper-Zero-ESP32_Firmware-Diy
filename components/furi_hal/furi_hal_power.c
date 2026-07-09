@@ -442,8 +442,13 @@ void furi_hal_power_shutdown(void) {
      * which assert-fails because our power-service stack is in PSRAM -> panic ->
      * reboot. Only a full power-cycle would clear it otherwise, which is exactly
      * why the reboot persisted across re-flashes. Disabling it unconditionally
-     * makes power-off deterministic regardless of what ran before. */
+     * makes power-off deterministic regardless of what ran before.
+     * gpio_deep_sleep_hold_dis() is only available on chips with RTC IO
+     * (SOC_RTCIO_PIN_COUNT > 0). On ESP32-C6 and other chips without RTC IO
+     * the function does not exist, so guard it accordingly. */
+#if SOC_RTCIO_PIN_COUNT > 0
     gpio_deep_sleep_hold_dis();
+#endif
     esp_deep_sleep_start();
 }
 
